@@ -13,7 +13,7 @@
     </div>
     <vue-tree-list
       @click="onClick"
-      @change-data="onChangedata"
+      @change-data="onChangeData"
       @delete-node="onDel"
       @add-node="onAddNode"
       @drop="drop"
@@ -134,12 +134,10 @@ export default {
     },
 
     onChangeData(params) {
-      // eslint-disable-next-line no-console
       console.log(params)
     },
 
     onAddNode(params) {
-      // eslint-disable-next-line no-console
       console.log(params)
     },
 

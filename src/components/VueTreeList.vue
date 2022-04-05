@@ -36,7 +36,7 @@
 
         <!-- <span>
           <slot name="treeNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
-            <i class="vtl-icon vtl-menu-icon vtl-icon-folder"></i>
+            <i class="vtl-icon vtl-menu-icon "></i>
           </slot>
         </span> -->
 
@@ -85,7 +85,7 @@
             v-if="!model.addTreeNodeDisabled"
           >
             <slot name="addTreeNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
-              <i class="vtl-icon vtl-icon-folder-plus-e"></i>
+              <i class="vtl-icon -plus-e"></i>
             </slot>
           </span>
           <span title="edit" @click.stop.prevent="setEditable" v-if="!model.editNodeDisabled">
@@ -312,7 +312,6 @@ export default {
     dragStart(e) {
       if (!(this.model.dragDisabled || this.model.disabled)) {
         compInOperation = this
-        // for firefox
         e.dataTransfer.setData('data', 'data')
         e.dataTransfer.effectAllowed = 'move'
         return true
@@ -418,26 +417,8 @@ export default {
   }
 }
 
-// .vtl-icon-file:before {
-//   content: '\e906';
-// }
-// .vtl-icon-folder:before {
-//   content: '\e907';
-// }
-// .vtl-icon-caret-down:before {
-//   content: '\E901';
-// }
-// .vtl-icon-caret-right:before {
-//   content: '\E900';
-// }
 // .vtl-icon-edit:before {
 //   content: '\e902';
-// }
-// .vtl-icon-folder-plus-e:before {
-//   content: '\e903';
-// }
-// .vtl-icon-plus:before {
-//   content: '\e904';
 // }
 // .vtl-icon-trash:before {
 //   content: '\e905';
