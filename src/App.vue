@@ -8,7 +8,7 @@
     </div>
     <vue-tree-list
       @click="onClick"
-      @change-name="onChangeName"
+      @change-data="onChangedata"
       @delete-node="onDel"
       @add-node="onAddNode"
       @drop="drop"
@@ -41,15 +41,6 @@
       </template>
       <template v-slot:delNodeIcon="slotProps">
         <span class="icon">{{ slotProps ? `✂️` : '' }}</span>
-      </template>
-      <template v-slot:treeNodeIcon="slotProps">
-        <span class="icon">
-          {{
-            slotProps.model.children && slotProps.model.children.length > 0 && !slotProps.expanded
-              ? '~'
-              : ''
-          }}
-        </span>
       </template>
     </vue-tree-list>
   </div>
@@ -108,7 +99,7 @@ export default {
       node.remove()
     },
 
-    onChangeName(params) {
+    onChangeData(params) {
       // eslint-disable-next-line no-console
       console.log(params)
     },

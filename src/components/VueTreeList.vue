@@ -22,8 +22,17 @@
         @mouseout="mouseOut"
         @click.stop="click"
       >
-        <span class="vtl-caret vtl-is-small" v-if="model.children && model.children.length > 0">
-          <i class="vtl-icon" :class="caretClass" @click.prevent.stop="toggle"></i>
+        <span class="vtl-caret" v-if="model.children && model.children.length > 0">
+          <!-- <i class="vtl-icon" :class="caretClass" @click.prevent.stop="toggle"></i> -->
+          <span v-show="this.expanded" @click="toggle">
+            <icon-caret-down class="vtl-icon vtl-is-small" />
+          </span>
+          <span v-show="!this.expanded" @click="toggle">
+            <icon-caret-right class="vtl-icon vtl-is-small" />
+          </span>
+        </span>
+        <span v-else class="vtl-caret vtl-is-small">
+          <span></span>
         </span>
 
         <span>
@@ -32,6 +41,7 @@
           </slot>
         </span>
 
+        <!-- data start -->
         <div class="vtl-node-content" v-if="!editable">
           <slot name="leafNameDisplay" :expanded="expanded" :model="model" :root="rootNode">
             {{ model.name }}
@@ -43,9 +53,40 @@
           type="text"
           ref="nodeInput"
           :value="model.name"
-          @input="updateName"
-          @blur="setUnEditable"
+          @input="updateData('name')"
+          @blur="setUnEditable('name')"
         />
+        <div class="vtl-node-content" v-if="!editable">
+          <slot name="leafCountNumber" :expanded="expanded" :model="model" :root="rootNode">
+            {{ model.countNumber }}
+          </slot>
+        </div>
+        <input
+          v-else
+          class="vtl-input"
+          type="text"
+          ref="nodeInput"
+          :value="model.counnNumber"
+          @input="updateData('countNumber')"
+          @blur="setUnEditable('countNumber')"
+        />
+        <div class="vtl-node-content" v-if="!editable">
+          <slot name="leafNUmber" :expanded="expanded" :model="model" :root="rootNode">
+            {{ model.number }}
+          </slot>
+        </div>
+        <input
+          v-else
+          class="vtl-input"
+          type="text"
+          ref="nodeInput"
+          :value="model.number"
+          @input="updateData('number')"
+          @blur="setUnEditable('number')"
+        />
+
+        <!-- data end -->
+
         <div class="vtl-operation" v-show="isHover">
           <span
             :title="defaultAddTreeNodeTitle"
@@ -90,7 +131,7 @@
     </div>
 
     <div
-      :class="{ 'vtl-tree-margin': model.name !== 'root' }"
+      :class="{ 'vtl-tree-padding': model.name !== 'root' }"
       v-show="model.name === 'root' || expanded"
       v-if="isFolder"
     >
@@ -116,12 +157,6 @@
         <template v-slot:delNodeIcon="slotProps">
           <slot name="delNodeIcon" v-bind="slotProps" />
         </template>
-        <!-- <template v-slot:leafNodeIcon="slotProps">
-          <slot name="leafNodeIcon" v-bind="slotProps" />
-        </template> -->
-        <template v-slot:treeNodeIcon="slotProps">
-          <slot name="treeNodeIcon" v-bind="slotProps" />
-        </template>
       </item>
     </div>
   </div>
@@ -130,10 +165,16 @@
 <script>
 import { TreeNode } from '../utils/Tree.js'
 import { addHandler, removeHandler } from '../utils/tools.js'
+import IconCaretDown from './icons/IconCaretDown.vue'
+import IconCaretRight from './icons/IconCaretRight.vue'
 
 let compInOperation = null
 
 export default {
+  components: {
+    IconCaretDown,
+    IconCaretRight,
+  },
   data() {
     return {
       isHover: false,
@@ -146,6 +187,9 @@ export default {
   },
   props: {
     model: {
+      type: Object,
+    },
+    listConfig: {
       type: Object,
     },
     defaultTreeNodeName: {
@@ -208,15 +252,19 @@ export default {
     removeHandler(window, 'keyup')
   },
   methods: {
-    updateName(e) {
-      let oldName = this.model.name
-      this.model.changeName(e.target.value)
-      this.rootNode.$emit('change-name', {
-        id: this.model.id,
-        oldName: oldName,
-        newName: e.target.value,
-        node: this.model,
-      })
+    updateData({ param } = {}) {
+      const oldData = this.model[param]
+      const newData = event.target.value
+      if (oldData !== newData) {
+        this.model.changeData()
+        this.rootNode.$emit('change-data', {
+          id: this.model.id,
+          oldData: oldData,
+          newData: newData,
+          param: param,
+          node: this.model,
+        })
+      }
     },
 
     delNode() {
@@ -232,22 +280,27 @@ export default {
       })
     },
 
-    setUnEditable(e) {
+    setUnEditable({ param } = {}) {
       this.editable = false
-      let oldName = this.model.name
-      this.model.changeName(e.target.value)
-      this.rootNode.$emit('change-name', {
-        id: this.model.id,
-        oldName: oldName,
-        newName: e.target.value,
-        eventType: 'blur',
-      })
+      let oldData = this.model[param]
+      let newData = event.target.value
+      if (oldData !== newData) {
+        this.model.changeData(newData)
+        this.rootNode.$emit('change-data', {
+          id: this.model.id,
+          oldData: oldData,
+          newData: newData,
+          param: param,
+          eventType: 'blur',
+        })
+      }
     },
 
     toggle() {
-      if (this.isFolder) {
-        this.expanded = !this.expanded
-      }
+      // if (this.isFolder) {
+      console.log('toggle')
+      this.expanded = !this.expanded
+      // }
     },
 
     mouseOver() {
@@ -365,6 +418,7 @@ export default {
 <style lang="scss" scoped>
 .vtl-icon {
   line-height: 1;
+  cursor: pointer;
 
   &.vtl-menu-icon {
     margin-right: 4px;
@@ -377,30 +431,30 @@ export default {
   }
 }
 
-.vtl-icon-file:before {
-  content: '\e906';
-}
-.vtl-icon-folder:before {
-  content: '\e907';
-}
-.vtl-icon-caret-down:before {
-  content: '\E901';
-}
-.vtl-icon-caret-right:before {
-  content: '\E900';
-}
-.vtl-icon-edit:before {
-  content: '\e902';
-}
-.vtl-icon-folder-plus-e:before {
-  content: '\e903';
-}
-.vtl-icon-plus:before {
-  content: '\e904';
-}
-.vtl-icon-trash:before {
-  content: '\e905';
-}
+// .vtl-icon-file:before {
+//   content: '\e906';
+// }
+// .vtl-icon-folder:before {
+//   content: '\e907';
+// }
+// .vtl-icon-caret-down:before {
+//   content: '\E901';
+// }
+// .vtl-icon-caret-right:before {
+//   content: '\E900';
+// }
+// .vtl-icon-edit:before {
+//   content: '\e902';
+// }
+// .vtl-icon-folder-plus-e:before {
+//   content: '\e903';
+// }
+// .vtl-icon-plus:before {
+//   content: '\e904';
+// }
+// .vtl-icon-trash:before {
+//   content: '\e905';
+// }
 
 .vtl-border {
   height: 5px;
@@ -417,8 +471,10 @@ export default {
 }
 
 .vtl-node-main {
-  display: flex;
-  align-items: center;
+  // display: flex;
+  // align-items: center;
+  display: grid;
+  grid: auto-flow / 15px 15px calc(50% - 80px) 20% 15% 15%;
   padding: 5px 0 5px 1rem;
   .vtl-input {
     border: none;
@@ -434,6 +490,9 @@ export default {
   .vtl-caret {
     margin-left: -1rem;
   }
+  .vtl-is-small {
+    width: 1rem;
+  }
   .vtl-operation {
     margin-left: 2rem;
     letter-spacing: 1px;
@@ -443,7 +502,7 @@ export default {
 .vtl-item {
   cursor: pointer;
 }
-.vtl-tree-margin {
-  margin-left: 2em;
+.vtl-tree-padding {
+  padding-left: 2em;
 }
 </style>
