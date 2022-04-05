@@ -5,14 +5,13 @@ import { traverseTree } from './tools'
  */
 export class TreeNode {
   constructor(data) {
-    const { id, isLeaf } = data
+    const { id } = data
     this.id = typeof id === 'undefined' ? new Date().valueOf() : id
     this.parent = null
     this.children = null
-    this.isLeaf = !!isLeaf
 
     for (const param in data) {
-      if (param !== 'id' && param !== 'children' && param !== 'isLeaf') {
+      if (param !== 'id' && param !== 'children') {
         this[param] = data[param]
       }
     }
@@ -77,10 +76,6 @@ export class TreeNode {
       return
     }
 
-    if (target.isLeaf) {
-      return
-    }
-
     this.parent._removeChild(this)
     this.parent = target
     this.pid = target.id
@@ -138,7 +133,7 @@ export class TreeNode {
 
 export class Tree {
   constructor(data) {
-    this.root = new TreeNode({ name: 'root', isLeaf: false, id: 0 })
+    this.root = new TreeNode({ name: 'root', id: 0 })
     this.initNode(this.root, data)
     return this.root
   }

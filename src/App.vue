@@ -16,7 +16,6 @@
       @drop-after="dropAfter"
       :model="data"
       default-tree-node-name="Отдел"
-      default-leaf-node-name="Отдел"
       :default-expanded="false"
     >
       <template v-slot:leafNameDisplay="slotProps">
@@ -24,11 +23,18 @@
           {{ slotProps.model.name }}
         </span>
       </template>
+      <template v-slot:leafCountNumber="slotProps">
+        <span>
+          {{ slotProps.model.countNumber }}
+        </span>
+      </template>
+      <template v-slot:leafNumber="slotProps">
+        <span>
+          {{ slotProps.model.number }}
+        </span>
+      </template>
       <template v-slot:addTreeNodeIcon="slotProps">
         <span class="icon">{{ slotProps ? `📂` : '' }}</span>
-      </template>
-      <template v-slot:addLeafNodeIcon="slotProps">
-        <span class="icon">{{ slotProps ? `＋` : '' }}</span>
       </template>
       <template v-slot:editNodeIcon="slotProps">
         <span class="icon">{{ slotProps ? `📃` : '' }}</span>
@@ -36,14 +42,11 @@
       <template v-slot:delNodeIcon="slotProps">
         <span class="icon">{{ slotProps ? `✂️` : '' }}</span>
       </template>
-      <template v-slot:leafNodeIcon="slotProps">
-        <span class="icon">{{ slotProps ? `🍃` : '' }}</span>
-      </template>
       <template v-slot:treeNodeIcon="slotProps">
         <span class="icon">
           {{
             slotProps.model.children && slotProps.model.children.length > 0 && !slotProps.expanded
-              ? '🌲'
+              ? '~'
               : ''
           }}
         </span>
@@ -66,30 +69,32 @@ export default {
       data: new Tree([
         {
           name: 'Node 1',
+          counnNumber: '',
+          number: 5,
           id: 1,
           pid: 0,
           dragDisabled: true,
           addTreeNodeDisabled: true,
-          addLeafNodeDisabled: true,
           editNodeDisabled: true,
           delNodeDisabled: true,
           children: [
             {
               name: 'Node 1-2',
+              number: 5,
               id: 2,
-              isLeaf: true,
               pid: 1,
             },
           ],
         },
         {
           name: 'Node 2',
+          number: 10,
           id: 3,
           pid: 0,
-          disabled: true,
         },
         {
           name: 'Node 3',
+          number: 15,
           id: 4,
           pid: 0,
         },
@@ -134,7 +139,7 @@ export default {
     },
 
     addNode() {
-      const node = new TreeNode({ name: 'new node', isLeaf: false })
+      const node = new TreeNode({ name: 'Отдел' })
       if (!this.data.children) this.data.children = []
       this.data.addChildren(node)
     },

@@ -1,11 +1,6 @@
 <template>
   <div class="vtl">
-    <div
-      v-if="model.name !== 'root'"
-      :id="model.id"
-      class="vtl-node"
-      :class="{ 'vtl-leaf-node': model.isLeaf, 'vtl-tree-node': !model.isLeaf }"
-    >
+    <div v-if="model.name !== 'root'" :id="model.id" class="vtl-node vtl-tree-node">
       <div
         class="vtl-border vtl-up"
         :class="{ 'vtl-active': isDragEnterUp }"
@@ -31,12 +26,7 @@
           <i class="vtl-icon" :class="caretClass" @click.prevent.stop="toggle"></i>
         </span>
 
-        <span v-if="model.isLeaf">
-          <slot name="leafNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
-            <i class="vtl-icon vtl-menu-icon vtl-icon-file"></i>
-          </slot>
-        </span>
-        <span v-else>
+        <span>
           <slot name="treeNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
             <i class="vtl-icon vtl-menu-icon vtl-icon-folder"></i>
           </slot>
@@ -60,13 +50,13 @@
           <span
             :title="defaultAddTreeNodeTitle"
             @click.stop.prevent="addChild(false)"
-            v-if="!model.isLeaf && !model.addTreeNodeDisabled"
+            v-if="!model.addTreeNodeDisabled"
           >
             <slot name="addTreeNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
               <i class="vtl-icon vtl-icon-folder-plus-e"></i>
             </slot>
           </span>
-          <span
+          <!-- <span
             :title="defaultAddLeafNodeTitle"
             @click.stop.prevent="addChild(true)"
             v-if="!model.isLeaf && !model.addLeafNodeDisabled"
@@ -74,7 +64,7 @@
             <slot name="addLeafNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
               <i class="vtl-icon vtl-icon-plus"></i>
             </slot>
-          </span>
+          </span> -->
           <span title="edit" @click.stop.prevent="setEditable" v-if="!model.editNodeDisabled">
             <slot name="editNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
               <i class="vtl-icon vtl-icon-edit"></i>
@@ -107,29 +97,28 @@
       <item
         v-for="model in model.children"
         :default-tree-node-name="defaultTreeNodeName"
-        :default-leaf-node-name="defaultLeafNodeName"
         :default-expanded="defaultExpanded"
         :model="model"
         :key="model.id"
       >
-        <template v-slot:leafNameDisplay="slotProps">
+        <!-- <template v-slot:leafNameDisplay="slotProps">
           <slot name="leafNameDisplay" v-bind="slotProps" />
-        </template>
+        </template> -->
         <template v-slot:addTreeNodeIcon="slotProps">
           <slot name="addTreeNodeIcon" v-bind="slotProps" />
         </template>
-        <template v-slot:addLeafNodeIcon="slotProps">
+        <!-- <template v-slot:addLeafNodeIcon="slotProps">
           <slot name="addLeafNodeIcon" v-bind="slotProps" />
-        </template>
+        </template> -->
         <template v-slot:editNodeIcon="slotProps">
           <slot name="editNodeIcon" v-bind="slotProps" />
         </template>
         <template v-slot:delNodeIcon="slotProps">
           <slot name="delNodeIcon" v-bind="slotProps" />
         </template>
-        <template v-slot:leafNodeIcon="slotProps">
+        <!-- <template v-slot:leafNodeIcon="slotProps">
           <slot name="leafNodeIcon" v-bind="slotProps" />
-        </template>
+        </template> -->
         <template v-slot:treeNodeIcon="slotProps">
           <slot name="treeNodeIcon" v-bind="slotProps" />
         </template>
@@ -159,10 +148,6 @@ export default {
     model: {
       type: Object,
     },
-    defaultLeafNodeName: {
-      type: String,
-      default: 'Leaf Node',
-    },
     defaultTreeNodeName: {
       type: String,
       default: 'Tree Node',
@@ -170,10 +155,6 @@ export default {
     defaultAddTreeNodeTitle: {
       type: String,
       default: 'Add Tree Node',
-    },
-    defaultAddLeafNodeTitle: {
-      type: String,
-      default: 'Add Leaf Node',
     },
     defaultExpanded: {
       type: Boolean,
@@ -285,10 +266,10 @@ export default {
       })
     },
 
-    addChild(isLeaf) {
-      let name = isLeaf ? this.defaultLeafNodeName : this.defaultTreeNodeName
+    addChild() {
+      let name = this.defaultTreeNodeName
       this.expanded = true
-      let node = new TreeNode({ name, isLeaf })
+      let node = new TreeNode({ name })
       this.model.addChildren(node, true)
       this.rootNode.$emit('add-node', node)
     },
@@ -312,8 +293,7 @@ export default {
     },
     dragEnter() {
       if (!compInOperation) return
-      if (compInOperation.model.id === this.model.id || !compInOperation || this.model.isLeaf)
-        return
+      if (compInOperation.model.id === this.model.id || !compInOperation) return
       this.isDragEnterNode = true
     },
     dragLeave() {
