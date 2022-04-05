@@ -1,5 +1,9 @@
 $base-color: #2d3e50;
 $white: #ffffff;
+$blue-shade-one: #fbfcff;
+$blue-shade-two: #e4edfc;
+$blue-shade-three: #c7dbfe;
+$blue-shade-four: #9dc4ff;
 $gray: #d0cfcf;
 
 .vtl {
@@ -23,4 +27,12 @@ $gray: #d0cfcf;
 .muted {
   color: $gray;
   font-size: 80%;
+}
+
+.ml-1 {
+  margin-left: 0.5rem;
+}
+
+.ml-2 {
+  margin-left: 1rem;
 }

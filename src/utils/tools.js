@@ -1,6 +1,6 @@
-var handlerCache
+let handlerCache
 
-export const addHandler = function (element, type, handler) {
+export const addHandler = function(element, type, handler) {
   handlerCache = handler
   if (element.addEventListener) {
     element.addEventListener(type, handler, false)
@@ -11,7 +11,7 @@ export const addHandler = function (element, type, handler) {
   }
 }
 
-export const removeHandler = function (element, type) {
+export const removeHandler = function(element, type) {
   if (element.removeEventListener) {
     element.removeEventListener(type, handlerCache, false)
   } else if (element.detachEvent) {
@@ -21,7 +21,7 @@ export const removeHandler = function (element, type) {
   }
 }
 
-export const traverseTree = (root) => {
+export const traverseTree = root => {
   const newRoot = {}
 
   for (const node in root) {

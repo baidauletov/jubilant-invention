@@ -6,6 +6,11 @@
     <div style="margin: 1.25rem 1.5rem">
       <button @click="addNode" class="add-button">+ Добавить</button>
     </div>
+    <div class="list-header">
+      <span v-for="item in configFile" :key="item.id" class="list-header__item">{{
+        item.name
+      }}</span>
+    </div>
     <vue-tree-list
       @click="onClick"
       @change-data="onChangedata"
@@ -33,14 +38,14 @@
           {{ slotProps.model.number }}
         </span>
       </template>
-      <template v-slot:addTreeNodeIcon="slotProps">
+      <!-- <template v-slot:addTreeNodeIcon="slotProps">
         <span class="icon">{{ slotProps ? `📂` : '' }}</span>
-      </template>
+      </template> -->
       <template v-slot:editNodeIcon="slotProps">
-        <span class="icon">{{ slotProps ? `📃` : '' }}</span>
+        <span class="icon"><icon-pencil />{{ slotProps ? '' : '' }}</span>
       </template>
       <template v-slot:delNodeIcon="slotProps">
-        <span class="icon">{{ slotProps ? `✂️` : '' }}</span>
+        <span class="icon ml-2"><icon-erase />{{ slotProps ? '' : '' }}</span>
       </template>
     </vue-tree-list>
   </div>
@@ -49,10 +54,15 @@
 <script>
 import VueTreeList from './components/VueTreeList.vue'
 import { Tree, TreeNode } from './utils/Tree.js'
+import { mapGetters } from 'vuex'
+import IconErase from './components/icons/IconErase.vue'
+import IconPencil from './components/icons/IconPencil.vue'
 
 export default {
   components: {
     VueTreeList,
+    IconErase,
+    IconPencil
   },
   data() {
     return {
@@ -60,7 +70,7 @@ export default {
       data: new Tree([
         {
           name: 'Node 1',
-          counnNumber: '',
+          countNumber: '',
           number: 5,
           id: 1,
           pid: 0,
@@ -73,23 +83,47 @@ export default {
               name: 'Node 1-2',
               number: 5,
               id: 2,
-              pid: 1,
-            },
-          ],
+              pid: 1
+            }
+          ]
         },
         {
           name: 'Node 2',
           number: 10,
           id: 3,
-          pid: 0,
+          pid: 0
         },
         {
           name: 'Node 3',
           number: 15,
           id: 4,
-          pid: 0,
-        },
+          pid: 0
+        }
       ]),
+      configFile: {
+        id: {
+          id: 'id',
+          name: ''
+        },
+        countNumber: {
+          id: 'countNumber',
+          name: 'Общее количество'
+        },
+        factNumber: {
+          id: 'factNumber',
+          name: 'Фактическое количество'
+        },
+        action: {
+          id: 'action',
+          name: 'Действия'
+        }
+      }
+    }
+  },
+  computed: {
+    ...mapGetters(['TREE_GETTER']),
+    modelData() {
+      return new Tree([this.TREE_GETTER])
     }
   },
   methods: {
@@ -114,17 +148,17 @@ export default {
       console.log(params)
     },
 
-    drop: function ({ node, src, target }) {
+    drop: function({ node, src, target }) {
       // eslint-disable-next-line no-console
       console.log('drop', node, src, target)
     },
 
-    dropBefore: function ({ node, src, target }) {
+    dropBefore: function({ node, src, target }) {
       // eslint-disable-next-line no-console
       console.log('drop-before', node, src, target)
     },
 
-    dropAfter: function ({ node, src, target }) {
+    dropAfter: function({ node, src, target }) {
       // eslint-disable-next-line no-console
       console.log('drop-after', node, src, target)
     },
@@ -156,8 +190,8 @@ export default {
       }
 
       vm.newTree = _dfs(vm.data)
-    },
-  },
+    }
+  }
 }
 </script>
 
@@ -168,7 +202,7 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  margin: 4.5rem 6rem;
+  margin: 4.5rem 15%;
 }
 
 .header {
@@ -181,5 +215,27 @@ export default {
 
 .add-button {
   cursor: pointer;
+}
+
+.list-header {
+  display: grid;
+  grid: auto-flow/45% auto auto auto;
+  background-color: $base-color;
+  &__item {
+    color: $white;
+    font-size: 0.8rem;
+    padding: 0.75rem;
+    border-right: 1px solid white;
+    border-left: 1px solid white;
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  display: flex;
 }
 </style>

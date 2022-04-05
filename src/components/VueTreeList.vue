@@ -9,8 +9,10 @@
         @dragover="dragOverUp"
         @dragleave="dragLeaveUp"
       />
+
       <div
         :class="treeNodeClass"
+        :style="styleTreeGrid"
         :draggable="!model.dragDisabled"
         @dragstart="dragStart"
         @dragover="dragOver"
@@ -18,30 +20,28 @@
         @dragleave="dragLeave"
         @drop="drop"
         @dragend="dragEnd"
-        @mouseover="mouseOver"
-        @mouseout="mouseOut"
         @click.stop="click"
       >
-        <span class="vtl-caret" v-if="model.children && model.children.length > 0">
-          <!-- <i class="vtl-icon" :class="caretClass" @click.prevent.stop="toggle"></i> -->
+        <div class="vtl-caret" v-if="model.children && model.children.length > 0">
           <span v-show="this.expanded" @click="toggle">
             <icon-caret-down class="vtl-icon vtl-is-small" />
           </span>
           <span v-show="!this.expanded" @click="toggle">
             <icon-caret-right class="vtl-icon vtl-is-small" />
           </span>
-        </span>
-        <span v-else class="vtl-caret vtl-is-small">
+        </div>
+        <div v-else class="vtl-caret">
           <span></span>
-        </span>
+        </div>
 
-        <span>
+        <!-- <span>
           <slot name="treeNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
             <i class="vtl-icon vtl-menu-icon vtl-icon-folder"></i>
           </slot>
-        </span>
+        </span> -->
 
         <!-- data start -->
+
         <div class="vtl-node-content" v-if="!editable">
           <slot name="leafNameDisplay" :expanded="expanded" :model="model" :root="rootNode">
             {{ model.name }}
@@ -56,22 +56,13 @@
           @input="updateData('name')"
           @blur="setUnEditable('name')"
         />
-        <div class="vtl-node-content" v-if="!editable">
-          <slot name="leafCountNumber" :expanded="expanded" :model="model" :root="rootNode">
-            {{ model.countNumber }}
-          </slot>
+
+        <div class="vtl-node-content">
+          {{ countedNumber }}
         </div>
-        <input
-          v-else
-          class="vtl-input"
-          type="text"
-          ref="nodeInput"
-          :value="model.counnNumber"
-          @input="updateData('countNumber')"
-          @blur="setUnEditable('countNumber')"
-        />
+
         <div class="vtl-node-content" v-if="!editable">
-          <slot name="leafNUmber" :expanded="expanded" :model="model" :root="rootNode">
+          <slot name="leafNumber" :expanded="expanded" :model="model" :root="rootNode">
             {{ model.number }}
           </slot>
         </div>
@@ -87,7 +78,7 @@
 
         <!-- data end -->
 
-        <div class="vtl-operation" v-show="isHover">
+        <div class="vtl-operation">
           <span
             :title="defaultAddTreeNodeTitle"
             @click.stop.prevent="addChild(false)"
@@ -97,15 +88,6 @@
               <i class="vtl-icon vtl-icon-folder-plus-e"></i>
             </slot>
           </span>
-          <!-- <span
-            :title="defaultAddLeafNodeTitle"
-            @click.stop.prevent="addChild(true)"
-            v-if="!model.isLeaf && !model.addLeafNodeDisabled"
-          >
-            <slot name="addLeafNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
-              <i class="vtl-icon vtl-icon-plus"></i>
-            </slot>
-          </span> -->
           <span title="edit" @click.stop.prevent="setEditable" v-if="!model.editNodeDisabled">
             <slot name="editNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
               <i class="vtl-icon vtl-icon-edit"></i>
@@ -142,15 +124,9 @@
         :model="model"
         :key="model.id"
       >
-        <!-- <template v-slot:leafNameDisplay="slotProps">
-          <slot name="leafNameDisplay" v-bind="slotProps" />
-        </template> -->
         <template v-slot:addTreeNodeIcon="slotProps">
           <slot name="addTreeNodeIcon" v-bind="slotProps" />
         </template>
-        <!-- <template v-slot:addLeafNodeIcon="slotProps">
-          <slot name="addLeafNodeIcon" v-bind="slotProps" />
-        </template> -->
         <template v-slot:editNodeIcon="slotProps">
           <slot name="editNodeIcon" v-bind="slotProps" />
         </template>
@@ -159,6 +135,8 @@
         </template>
       </item>
     </div>
+
+    <vue-form v-if="isFormOpen" />
   </div>
 </template>
 
@@ -167,6 +145,7 @@ import { TreeNode } from '../utils/Tree.js'
 import { addHandler, removeHandler } from '../utils/tools.js'
 import IconCaretDown from './icons/IconCaretDown.vue'
 import IconCaretRight from './icons/IconCaretRight.vue'
+import VueForm from './VueForm.vue'
 
 let compInOperation = null
 
@@ -174,6 +153,7 @@ export default {
   components: {
     IconCaretDown,
     IconCaretRight,
+    VueForm
   },
   data() {
     return {
@@ -183,27 +163,28 @@ export default {
       isDragEnterBottom: false,
       isDragEnterNode: false,
       expanded: this.defaultExpanded,
+      isFormOpen: false
     }
   },
   props: {
     model: {
-      type: Object,
+      type: Object
     },
     listConfig: {
-      type: Object,
+      type: Object
     },
     defaultTreeNodeName: {
       type: String,
-      default: 'Tree Node',
+      default: 'Tree Node'
     },
     defaultAddTreeNodeTitle: {
       type: String,
-      default: 'Add Tree Node',
+      default: 'Add Tree Node'
     },
     defaultExpanded: {
       type: Boolean,
-      default: true,
-    },
+      default: true
+    }
   },
   computed: {
     rootNode() {
@@ -214,10 +195,6 @@ export default {
       return node
     },
 
-    caretClass() {
-      return this.expanded ? 'vtl-icon-caret-down' : 'vtl-icon-caret-right'
-    },
-
     isFolder() {
       return this.model.children && this.model.children.length
     },
@@ -225,23 +202,40 @@ export default {
     treeNodeClass() {
       const {
         model: { dragDisabled, disabled },
-        isDragEnterNode,
+        isDragEnterNode
       } = this
 
       return {
         'vtl-node-main': true,
         'vtl-active': isDragEnterNode,
         'vtl-drag-disabled': dragDisabled,
-        'vtl-disabled': disabled,
+        'vtl-disabled': disabled
       }
     },
+
+    countedNumber() {
+      return this.model.countNumber
+    },
+
+    parentNumber() {
+      let result = this.model.pid
+      return result
+    },
+
+    styleTreeGrid() {
+      let result = {
+        display: 'grid',
+        grid: `auto-flow / 2rem calc(45% - (1rem * (2 + ${this.parentNumber}))) auto auto auto`
+      }
+      return result
+    }
   },
   beforeCreate() {
     this.$options.components.item = require('./VueTreeList').default
   },
   mounted() {
     const vm = this
-    addHandler(window, 'keyup', function (e) {
+    addHandler(window, 'keyup', function(e) {
       // click enter
       if (e.keyCode === 13 && vm.editable) {
         vm.editable = false
@@ -262,7 +256,7 @@ export default {
           oldData: oldData,
           newData: newData,
           param: param,
-          node: this.model,
+          node: this.model
         })
       }
     },
@@ -291,31 +285,19 @@ export default {
           oldData: oldData,
           newData: newData,
           param: param,
-          eventType: 'blur',
+          eventType: 'blur'
         })
       }
     },
 
     toggle() {
-      // if (this.isFolder) {
-      console.log('toggle')
       this.expanded = !this.expanded
-      // }
-    },
-
-    mouseOver() {
-      if (this.model.disabled) return
-      this.isHover = true
-    },
-
-    mouseOut() {
-      this.isHover = false
     },
 
     click() {
       this.rootNode.$emit('click', {
         toggle: this.toggle,
-        ...this.model,
+        ...this.model
       })
     },
 
@@ -360,7 +342,7 @@ export default {
       this.rootNode.$emit('drop', {
         target: this.model,
         node: compInOperation.model,
-        src: oldParent,
+        src: oldParent
       })
     },
 
@@ -384,7 +366,7 @@ export default {
       this.rootNode.$emit('drop-before', {
         target: this.model,
         node: compInOperation.model,
-        src: oldParent,
+        src: oldParent
       })
     },
 
@@ -408,10 +390,15 @@ export default {
       this.rootNode.$emit('drop-after', {
         target: this.model,
         node: compInOperation.model,
-        src: oldParent,
+        src: oldParent
       })
     },
-  },
+    onCloseForm() {
+      console.log('also close From')
+      this.isFormOpen = false
+      console.log(this.isFormOpen)
+    }
+  }
 }
 </script>
 
@@ -471,11 +458,7 @@ export default {
 }
 
 .vtl-node-main {
-  // display: flex;
-  // align-items: center;
-  display: grid;
-  grid: auto-flow / 15px 15px calc(50% - 80px) 20% 15% 15%;
-  padding: 5px 0 5px 1rem;
+  padding: 5px 0;
   .vtl-input {
     border: none;
     max-width: 150px;
@@ -488,21 +471,28 @@ export default {
     outline: 2px dashed pink;
   }
   .vtl-caret {
-    margin-left: -1rem;
+    display: flex;
+    justify-content: center;
+    width: 2rem;
   }
   .vtl-is-small {
     width: 1rem;
   }
   .vtl-operation {
-    margin-left: 2rem;
-    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
   }
+}
+
+.vtl-node-content {
+  display: flex;
+  align-items: center;
 }
 
 .vtl-item {
   cursor: pointer;
 }
 .vtl-tree-padding {
-  padding-left: 2em;
+  padding-left: 1rem;
 }
 </style>
