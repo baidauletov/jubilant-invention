@@ -1,0 +1,26 @@
+$base-color: #2d3e50;
+$white: #ffffff;
+$gray: #d0cfcf;
+
+.vtl {
+  .vtl-drag-disabled {
+    background-color: $gray;
+    &:hover {
+      background-color: $gray;
+    }
+  }
+  .vtl-disabled {
+    background-color: $gray;
+  }
+}
+
+.icon {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.muted {
+  color: $gray;
+  font-size: 80%;
+}
