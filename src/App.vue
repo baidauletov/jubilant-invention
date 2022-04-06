@@ -24,9 +24,6 @@
       default-tree-node-name="Отдел"
       :default-expanded="false"
     >
-      <!-- <template v-slot:addTreeNodeIcon="slotProps">
-        <span class="icon">{{ slotProps ? `📂` : '' }}</span>
-      </template> -->
       <template v-slot:editNodeIcon="slotProps">
         <span class="icon"><icon-pencil />{{ slotProps ? '' : '' }}</span>
       </template>
@@ -38,7 +35,7 @@
       <ul>
         <li>Строки перетаскиваются <strong> drag and drop </strong></li>
         <li>
-          Первый строка в data сделан неубираемой
+          Первая строка в data установлена неубираемой (delNodeDisabled)
         </li>
       </ul>
     </div>

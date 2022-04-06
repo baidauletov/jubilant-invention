@@ -162,8 +162,7 @@ export default {
       isDragEnterUp: false,
       isDragEnterBottom: false,
       isDragEnterNode: false,
-      expanded: this.defaultExpanded,
-      isFormOpen: false
+      expanded: this.defaultExpanded
     }
   },
   props: {
@@ -406,11 +405,6 @@ export default {
         node: compInOperation.model,
         src: oldParent
       })
-    },
-    onCloseForm() {
-      console.log('also close From')
-      this.isFormOpen = false
-      console.log(this.isFormOpen)
     }
   }
 }
