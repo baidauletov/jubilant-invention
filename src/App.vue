@@ -23,7 +23,7 @@
       default-tree-node-name="Отдел"
       :default-expanded="false"
     >
-      <template v-slot:leafNameDisplay="slotProps">
+      <!-- <template v-slot:leafNameDisplay="slotProps">
         <span>
           {{ slotProps.model.name }}
         </span>
@@ -37,7 +37,7 @@
         <span>
           {{ slotProps.model.number }}
         </span>
-      </template>
+      </template> -->
       <!-- <template v-slot:addTreeNodeIcon="slotProps">
         <span class="icon">{{ slotProps ? `📂` : '' }}</span>
       </template> -->
@@ -53,7 +53,7 @@
 
 <script>
 import VueTreeList from './components/VueTreeList.vue'
-import { Tree, TreeNode } from './utils/Tree.js'
+import { Tree, TreeNode } from './model/Tree.js'
 import { mapGetters } from 'vuex'
 import IconErase from './components/icons/IconErase.vue'
 import IconPencil from './components/icons/IconPencil.vue'
@@ -70,7 +70,7 @@ export default {
       data: new Tree([
         {
           name: 'Node 1',
-          countNumber: '',
+          countNumber: 0,
           number: 5,
           id: 1,
           pid: 0,

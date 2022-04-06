@@ -141,7 +141,7 @@
 </template>
 
 <script>
-import { TreeNode } from '../utils/Tree.js'
+import { TreeNode } from '../model/Tree.js'
 import { addHandler, removeHandler } from '../utils/tools.js'
 import IconCaretDown from './icons/IconCaretDown.vue'
 import IconCaretRight from './icons/IconCaretRight.vue'

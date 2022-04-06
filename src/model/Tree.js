@@ -1,4 +1,4 @@
-import { traverseTree } from './tools'
+import { traverseTree } from '../utils/tools'
 /**
  *   dragDisabled: decide if it can be dragged
  *   disabled: desabled all operation
