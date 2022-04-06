@@ -1,8 +1,5 @@
 import { traverseTree } from '../utils/tools'
-/**
- *   dragDisabled: decide if it can be dragged
- *   disabled: desabled all operation
- */
+
 export class TreeNode {
   constructor(data) {
     const { id } = data
