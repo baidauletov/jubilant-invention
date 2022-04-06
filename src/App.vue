@@ -3,7 +3,7 @@
     <header class="header">
       <span>Организационная структура</span>
     </header>
-    <div style="margin: 1.25rem 1.5rem">
+    <div>
       <button @click="addNode" class="add-button">+ Добавить</button>
     </div>
     <div class="list-header">
@@ -13,7 +13,8 @@
     </div>
     <vue-tree-list
       @click="onClick"
-      @change-data="onChangeData"
+      @change-name="onChangeName"
+      @change-number="onChangeNumber"
       @delete-node="onDel"
       @add-node="onAddNode"
       @drop="drop"
@@ -23,21 +24,6 @@
       default-tree-node-name="Отдел"
       :default-expanded="false"
     >
-      <!-- <template v-slot:leafNameDisplay="slotProps">
-        <span>
-          {{ slotProps.model.name }}
-        </span>
-      </template>
-      <template v-slot:leafCountNumber="slotProps">
-        <span>
-          {{ slotProps.model.countNumber }}
-        </span>
-      </template>
-      <template v-slot:leafNumber="slotProps">
-        <span>
-          {{ slotProps.model.number }}
-        </span>
-      </template> -->
       <!-- <template v-slot:addTreeNodeIcon="slotProps">
         <span class="icon">{{ slotProps ? `📂` : '' }}</span>
       </template> -->
@@ -48,13 +34,21 @@
         <span class="icon ml-2"><icon-erase />{{ slotProps ? '' : '' }}</span>
       </template>
     </vue-tree-list>
+    <div class="comment">
+      <ul>
+        <li>Строки перетаскиваются <strong> drag and drop </strong></li>
+        <li>
+          Первый строка в data сделан неубираемой
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script>
 import VueTreeList from './components/VueTreeList.vue'
 import { Tree, TreeNode } from './model/Tree.js'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 import IconErase from './components/icons/IconErase.vue'
 import IconPencil from './components/icons/IconPencil.vue'
 
@@ -69,11 +63,11 @@ export default {
       newTree: {},
       data: new Tree([
         {
-          name: 'Node 1',
-          countNumber: 0,
+          name: 'Семей',
           number: 5,
           id: 1,
           pid: 0,
+          deep: 0,
           dragDisabled: true,
           addTreeNodeDisabled: true,
           editNodeDisabled: true,
@@ -83,21 +77,24 @@ export default {
               name: 'Node 1-2',
               number: 5,
               id: 2,
-              pid: 1
+              pid: 1,
+              deep: 1
             }
           ]
         },
         {
-          name: 'Node 2',
+          name: 'Алматы',
           number: 10,
           id: 3,
-          pid: 0
+          pid: 0,
+          deep: 0
         },
         {
-          name: 'Node 3',
+          name: 'Москва',
           number: 15,
           id: 4,
-          pid: 0
+          pid: 0,
+          deep: 0
         }
       ]),
       configFile: {
@@ -120,21 +117,34 @@ export default {
       }
     }
   },
+  mounted() {
+    let tree = this.getNewTree()
+    this.updateTree(tree)
+  },
   computed: {
-    ...mapGetters(['TREE_GETTER']),
-    modelData() {
-      return new Tree([this.TREE_GETTER])
-    }
+    ...mapGetters(['getTree'])
   },
   methods: {
+    ...mapMutations(['updateTree']),
+
     onDel(node) {
-      // eslint-disable-next-line no-console
       console.log(node)
       node.remove()
+
+      let tree = this.getNewTree()
+      this.updateTree(tree)
     },
 
-    onChangeData(params) {
+    onChangeName(params) {
       console.log(params)
+      let tree = this.getNewTree()
+      this.updateTree(tree)
+    },
+
+    onChangeNumber(params) {
+      console.log(params)
+      let tree = this.getNewTree()
+      this.updateTree(tree)
     },
 
     onAddNode(params) {
@@ -142,37 +152,39 @@ export default {
     },
 
     onClick(params) {
-      // eslint-disable-next-line no-console
       console.log(params)
     },
 
     drop: function({ node, src, target }) {
-      // eslint-disable-next-line no-console
       console.log('drop', node, src, target)
+
+      let tree = this.getNewTree()
+      this.updateTree(tree)
     },
 
     dropBefore: function({ node, src, target }) {
-      // eslint-disable-next-line no-console
       console.log('drop-before', node, src, target)
     },
 
     dropAfter: function({ node, src, target }) {
-      // eslint-disable-next-line no-console
       console.log('drop-after', node, src, target)
     },
 
     addNode() {
-      const node = new TreeNode({ name: 'Отдел' })
+      const node = new TreeNode({ name: 'Отдел', number: 0 })
       if (!this.data.children) this.data.children = []
       this.data.addChildren(node)
+
+      let tree = this.getNewTree()
+      this.updateTree(tree)
     },
 
     getNewTree() {
-      const vm = this
+      let vm = this
       function _dfs(oldNode) {
-        const newNode = {}
+        let newNode = {}
 
-        for (const k in oldNode) {
+        for (let k in oldNode) {
           if (k !== 'children' && k !== 'parent') {
             newNode[k] = oldNode[k]
           }
@@ -188,6 +200,8 @@ export default {
       }
 
       vm.newTree = _dfs(vm.data)
+
+      return vm.newTree
     }
   }
 }
@@ -213,11 +227,12 @@ export default {
 
 .add-button {
   cursor: pointer;
+  margin: 1.25rem 1.5rem;
 }
 
 .list-header {
   display: grid;
-  grid: auto-flow/45% auto auto auto;
+  grid: auto-flow/45% 10rem 10rem 10rem;
   background-color: $base-color;
   &__item {
     color: $white;
@@ -232,8 +247,19 @@ export default {
 }
 
 .icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   display: flex;
+}
+
+.comment {
+  margin-top: 5rem;
+  display: flex;
+  justify-content: flex-end;
+  font-style: bold;
+  border: 1px solid green;
+  border-radius: 8px;
+  width: fit-content;
+  padding: 8px 16px;
 }
 </style>

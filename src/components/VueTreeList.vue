@@ -22,7 +22,11 @@
         @dragend="dragEnd"
         @click.stop="click"
       >
-        <div class="vtl-caret" v-if="model.children && model.children.length > 0">
+        <div
+          class="vtl-caret"
+          :style="caretStyle"
+          v-if="model.children && model.children.length > 0"
+        >
           <span v-show="this.expanded" @click="toggle">
             <icon-caret-down class="vtl-icon vtl-is-small" />
           </span>
@@ -33,12 +37,6 @@
         <div v-else class="vtl-caret">
           <span></span>
         </div>
-
-        <!-- <span>
-          <slot name="treeNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
-            <i class="vtl-icon vtl-menu-icon "></i>
-          </slot>
-        </span> -->
 
         <!-- data start -->
 
@@ -53,15 +51,15 @@
           type="text"
           ref="nodeInput"
           :value="model.name"
-          @input="updateData('name')"
-          @blur="setUnEditable('name')"
+          @input="updateName"
         />
+        <!-- @blur="setUnEditable" -->
 
         <div class="vtl-node-content">
           {{ countedNumber }}
         </div>
 
-        <div class="vtl-node-content" v-if="!editable">
+        <div class="vtl-node-content ml-2" v-if="!editable">
           <slot name="leafNumber" :expanded="expanded" :model="model" :root="rootNode">
             {{ model.number }}
           </slot>
@@ -72,9 +70,9 @@
           type="text"
           ref="nodeInput"
           :value="model.number"
-          @input="updateData('number')"
-          @blur="setUnEditable('number')"
+          @input="updateNumber"
         />
+        <!-- @blur="setUnEditable" -->
 
         <!-- data end -->
 
@@ -88,7 +86,12 @@
               <i class="vtl-icon -plus-e"></i>
             </slot>
           </span>
-          <span title="edit" @click.stop.prevent="setEditable" v-if="!model.editNodeDisabled">
+          <span
+            class="ml-2"
+            title="edit"
+            @click.stop.prevent="setEditable"
+            v-if="!model.editNodeDisabled"
+          >
             <slot name="editNodeIcon" :expanded="expanded" :model="model" :root="rootNode">
               <i class="vtl-icon vtl-icon-edit"></i>
             </slot>
@@ -124,9 +127,9 @@
         :model="model"
         :key="model.id"
       >
-        <template v-slot:addTreeNodeIcon="slotProps">
+        <!-- <template v-slot:addTreeNodeIcon="slotProps">
           <slot name="addTreeNodeIcon" v-bind="slotProps" />
-        </template>
+        </template> -->
         <template v-slot:editNodeIcon="slotProps">
           <slot name="editNodeIcon" v-bind="slotProps" />
         </template>
@@ -135,8 +138,6 @@
         </template>
       </item>
     </div>
-
-    <vue-form v-if="isFormOpen" />
   </div>
 </template>
 
@@ -145,15 +146,14 @@ import { TreeNode } from '../model/Tree.js'
 import { addHandler, removeHandler } from '../utils/tools.js'
 import IconCaretDown from './icons/IconCaretDown.vue'
 import IconCaretRight from './icons/IconCaretRight.vue'
-import VueForm from './VueForm.vue'
+import { mapGetters } from 'vuex'
 
 let compInOperation = null
 
 export default {
   components: {
     IconCaretDown,
-    IconCaretRight,
-    VueForm
+    IconCaretRight
   },
   data() {
     return {
@@ -170,9 +170,6 @@ export default {
     model: {
       type: Object
     },
-    listConfig: {
-      type: Object
-    },
     defaultTreeNodeName: {
       type: String,
       default: 'Tree Node'
@@ -187,6 +184,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters['getTreeItem'],
     rootNode() {
       let node = this.$parent
       while (node._props.model.name !== 'root') {
@@ -213,19 +211,29 @@ export default {
       }
     },
 
-    countedNumber() {
+    countedNumber: function() {
       return this.model.countNumber
     },
 
     parentNumber() {
-      let result = this.model.pid
+      const result = this.model.deep
       return result
     },
 
     styleTreeGrid() {
-      let result = {
+      const result = {
         display: 'grid',
-        grid: `auto-flow / 2rem calc(45% - (1rem * (2 + ${this.parentNumber}))) auto auto auto`
+        grid: `auto-flow / ${2 + this.parentNumber}rem calc(45% - ${2 +
+          this.parentNumber}rem)  10rem 10rem auto`,
+        backgroundColor: `hsl(240, 100%, ${100 * (1 - this.parentNumber * 0.0725)}%)`
+        // paddingLeft: `${1 * this.parentNumber}rem`
+      }
+      return result
+    },
+
+    caretStyle() {
+      const result = {
+        paddingLeft: `${1 * this.parentNumber}rem`
       }
       return result
     }
@@ -246,19 +254,26 @@ export default {
     removeHandler(window, 'keyup')
   },
   methods: {
-    updateData({ param } = {}) {
-      const oldData = this.model[param]
-      const newData = event.target.value
-      if (oldData !== newData) {
-        this.model.changeData()
-        this.rootNode.$emit('change-data', {
-          id: this.model.id,
-          oldData: oldData,
-          newData: newData,
-          param: param,
-          node: this.model
-        })
-      }
+    updateName(e) {
+      var oldName = this.model.name
+      this.model.changeName(e.target.value)
+      this.rootNode.$emit('change-name', {
+        id: this.model.id,
+        oldName: oldName,
+        newName: e.target.value,
+        node: this.model
+      })
+    },
+
+    updateNumber(e) {
+      var oldNumber = this.model.number
+      this.model.changeNumber(e.target.value)
+      this.rootNode.$emit('change-number', {
+        id: this.model.id,
+        oldNumber: oldNumber,
+        newNumber: e.target.value,
+        node: this.model
+      })
     },
 
     delNode() {
@@ -274,21 +289,21 @@ export default {
       })
     },
 
-    setUnEditable({ param } = {}) {
-      this.editable = false
-      let oldData = this.model[param]
-      let newData = event.target.value
-      if (oldData !== newData) {
-        this.model.changeData(newData)
-        this.rootNode.$emit('change-data', {
-          id: this.model.id,
-          oldData: oldData,
-          newData: newData,
-          param: param,
-          eventType: 'blur'
-        })
-      }
-    },
+    // setUnEditable({ param } = {}) {
+    //   this.editable = false
+    //   let oldData = this.model[param]
+    //   let newData = event.target.value
+    //   if (oldData !== newData) {
+    //     this.model.changeData(newData)
+    //     this.rootNode.$emit('change-data', {
+    //       id: this.model.id,
+    //       oldData: oldData,
+    //       newData: newData,
+    //       param: param,
+    //       eventType: 'blur'
+    //     })
+    //   }
+    // },
 
     toggle() {
       this.expanded = !this.expanded
@@ -425,11 +440,11 @@ export default {
 // }
 
 .vtl-border {
-  height: 5px;
-  &.vtl-up {
-    margin-top: -5px;
-    background-color: transparent;
-  }
+  height: 1px;
+  // &.vtl-up {
+  //   margin-top: -5px;
+  //   background-color: transparent;
+  // }
   &.vtl-bottom {
     background-color: transparent;
   }
@@ -439,7 +454,7 @@ export default {
 }
 
 .vtl-node-main {
-  padding: 5px 0;
+  padding: 8px 0;
   .vtl-input {
     border: none;
     max-width: 150px;
@@ -454,7 +469,6 @@ export default {
   .vtl-caret {
     display: flex;
     justify-content: center;
-    width: 2rem;
   }
   .vtl-is-small {
     width: 1rem;
@@ -474,6 +488,6 @@ export default {
   cursor: pointer;
 }
 .vtl-tree-padding {
-  padding-left: 1rem;
+  // padding-left: 1rem;
 }
 </style>

@@ -9,6 +9,8 @@ export class TreeNode {
     this.id = typeof id === 'undefined' ? new Date().valueOf() : id
     this.parent = null
     this.children = null
+    this.deep = 0
+    // console.log(this.id + 'id ---> data-deep :', this.deep)
 
     for (const param in data) {
       if (param !== 'id' && param !== 'children') {
@@ -19,6 +21,9 @@ export class TreeNode {
 
   changeName(name) {
     this.name = name
+  }
+  changeNumber(number) {
+    this.number = number
   }
 
   addChildren(children) {
@@ -31,12 +36,14 @@ export class TreeNode {
         const child = children[i]
         child.parent = this
         child.pid = this.id
+        child.deep = this.name === 'root' ? 0 : this.deep + 1
       }
       this.children.concat(children)
     } else {
       const child = children
       child.parent = this
       child.pid = this.id
+      child.deep = this.name === 'root' ? 0 : this.deep + 1
       this.children.push(child)
     }
   }
@@ -79,6 +86,7 @@ export class TreeNode {
     this.parent._removeChild(this)
     this.parent = target
     this.pid = target.id
+    this.deep = target.deep + 1
     if (!target.children) {
       target.children = []
     }
@@ -101,7 +109,6 @@ export class TreeNode {
       return false
     }
 
-    // cannot insert ancestor to child
     if (this.isTargetChild(target)) {
       return false
     }
@@ -109,6 +116,7 @@ export class TreeNode {
     this.parent._removeChild(this)
     this.parent = target.parent
     this.pid = target.parent.id
+    this.deep = target.parent.deep
     return true
   }
 
@@ -133,16 +141,16 @@ export class TreeNode {
 
 export class Tree {
   constructor(data) {
-    this.root = new TreeNode({ name: 'root', id: 0 })
+    this.root = new TreeNode({ name: 'root', id: 0, deep: 0 })
     this.initNode(this.root, data)
     return this.root
   }
 
   initNode(node, data) {
     for (let i = 0, len = data.length; i < len; i++) {
-      var _data = data[i]
+      let _data = data[i]
 
-      var child = new TreeNode(_data)
+      let child = new TreeNode(_data)
       if (_data.children && _data.children.length > 0) {
         this.initNode(child, _data.children)
       }

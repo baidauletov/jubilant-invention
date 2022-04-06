@@ -1,7 +1,7 @@
 <template>
   <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
     <g transform="scale(2)">
-      <circle style="fill:#f44336" cx="8" cy="8" r="7" />
+      <circle style="fill:#2d3e50" cx="8" cy="8" r="7" />
       <rect
         style="fill:#ffffff"
         width="2"
